@@ -43,8 +43,8 @@ MODEL_CONFIG_FILE="$PROJECT_DIR/.model_config"
 mkdir -p "$PROJECT_DEBUG_DIR" "$PROJECT_MODEL_CACHE_DIR"
 
 # ──────────────── Download Fortytwo Utils ────────────────
-UTILS_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/utilities/latest")
-curl -L -o "$UTILS_EXEC" "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/utilities/v$UTILS_VERSION/FortytwoUtilsLinux"
+UTILS_VERSION=$(curl -s "https://download.swarminference.io/utilities/latest")
+curl -L -o "$UTILS_EXEC" "https://download.swarminference.io/utilities/v$UTILS_VERSION/FortytwoUtilsLinux"
 chmod +x "$UTILS_EXEC"
 
 # ──────────────── Identity Setup ────────────────
