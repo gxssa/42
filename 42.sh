@@ -113,14 +113,14 @@ fi
 
 # ──────────────── Update Capsule ────────────────
 animate_text "🔄 Updating Capsule..."
-CAPSULE_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/latest")
-curl -L -o "$CAPSULE_EXEC" "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/v$CAPSULE_VERSION/FortytwoCapsule-linux-amd64"
+CAPSULE_VERSION=$(curl -s "https://download.swarminference.io/capsule/latest")
+curl -L -o "$CAPSULE_EXEC" "https://download.swarminference.io/capsule/v$CAPSULE_VERSION/FortytwoCapsule-linux-amd64"
 chmod +x "$CAPSULE_EXEC"
 
 # ──────────────── Update Protocol ────────────────
 animate_text "🔄 Updating Protocol Node..."
-PROTOCOL_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/protocol/latest")
-curl -L -o "$PROTOCOL_EXEC" "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/protocol/v$PROTOCOL_VERSION/FortytwoProtocolNode-linux-amd64"
+PROTOCOL_VERSION=$(curl -s "https://download.swarminference.io/protocol/latest")
+curl -L -o "$PROTOCOL_EXEC" "https://download.swarminference.io/protocol/v$PROTOCOL_VERSION/FortytwoProtocolNode-linux-amd64"
 chmod +x "$PROTOCOL_EXEC"
 
 # ──────────────── Start Capsule ────────────────
