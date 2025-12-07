@@ -15,10 +15,7 @@ animate_text() {
 clear
 echo ""
 echo "┌────────────────────────────────────────────────────────────┐"
-echo "│       🚀 Fortytwo CPU Node Setup – Airdrop Node            │"
-echo "├────────────────────────────────────────────────────────────┤"
-echo "│ ⚙️  Telegram: https://t.me/airdrop_node                    │"
-echo "│ 💻  Min Spec: 4 vCPU / 8 GB RAM                           │"
+echo "│                   Fortytwo CPU Node Setup                  │"
 echo "└────────────────────────────────────────────────────────────┘"
 echo ""
 
@@ -82,7 +79,7 @@ fi
 if [[ ! -f "$MODEL_CONFIG_FILE" ]]; then
     echo ""
     echo "Choose model to run on this CPU node:"
-    echo "  [1] TinyLlama‑1.1B‑Chat – ultra‑light (≈1.1 GB RAM)"
+    echo "  [1] VibeThinker 1.5B Q4 (≈1.1 GB RAM)"
     echo "  [2] Qwen3‑1.7B – smarter model (≈1.7 GB RAM)"
     read -rp "Select model [1-2] (default 1): " MODEL_OPTION
     MODEL_OPTION=${MODEL_OPTION:-1}
@@ -92,9 +89,9 @@ if [[ ! -f "$MODEL_CONFIG_FILE" ]]; then
         LLM_HF_MODEL_NAME="Qwen3-1.7B-Q4_K_M.gguf"
         NODE_NAME="Qwen 3 1.7B Q4"
     else
-        LLM_HF_REPO="TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"
-        LLM_HF_MODEL_NAME="tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
-        NODE_NAME="TinyLlama 1.1B Chat Q4"
+        LLM_HF_REPO="mradermacher/VibeThinker-1.5B-GGUF"
+        LLM_HF_MODEL_NAME="VibeThinker-1.5B.Q4_K_M.gguf"
+        NODE_NAME="VibeThinker 1.5B Q4"
     fi
 
     # Save model config
@@ -124,7 +121,7 @@ curl -L -o "$PROTOCOL_EXEC" "https://download.swarminference.io/protocol/v$PROTO
 chmod +x "$PROTOCOL_EXEC"
 
 # ──────────────── Start Capsule ────────────────
-animate_text "🚀 Launching Capsule..."
+animate_text " Launching Capsule..."
 "$CAPSULE_EXEC" \
     --llm-hf-repo "$LLM_HF_REPO" \
     --llm-hf-model-name "$LLM_HF_MODEL_NAME" \
@@ -132,19 +129,19 @@ animate_text "🚀 Launching Capsule..."
 CAPSULE_PID=$!
 
 CAPSULE_READY_URL="http://0.0.0.0:42442/ready"
-animate_text "⏳ Waiting for Capsule to be ready..."
+animate_text " Waiting for Capsule to be ready..."
 while true; do
     STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$CAPSULE_READY_URL")
     [[ "$STATUS" == "200" ]] && break
     sleep 5
     if ! kill -0 "$CAPSULE_PID" 2>/dev/null; then
-        echo "❌ Capsule exited unexpectedly."
+        echo " Capsule exited unexpectedly."
         exit 1
     fi
 done
 
 # ──────────────── Start Protocol ────────────────
-animate_text "🚀 Launching Protocol Node..."
+animate_text " Launching Protocol Node..."
 "$PROTOCOL_EXEC" \
     --account-private-key "$ACCOUNT_PRIVATE_KEY" \
     --db-folder "$PROJECT_DEBUG_DIR/db" &
