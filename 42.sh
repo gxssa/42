@@ -1,7 +1,8 @@
 #!/bin/bash
+set -e
 
-# Fortytwo CPU Node Installer & Auto-Updater
-# By Airdrop Node – https://t.me/airdrop_node
+# Fortytwo CPU Node Installer – By Airdrop Node
+# https://t.me/airdrop_node
 
 animate_text() {
     local text="$1"
@@ -12,62 +13,80 @@ animate_text() {
     echo
 }
 
+# ─────────────────────────────────────────────────────────────
+# Banner
+# ─────────────────────────────────────────────────────────────
 clear
 echo ""
 echo "┌────────────────────────────────────────────────────────────┐"
-echo "│                   Fortytwo CPU Node Setup                  │"
+echo "│         🚀 Fortytwo CPU Node Setup – Airdrop Node          │"
+echo "├────────────────────────────────────────────────────────────┤"
+echo "│ ⚙️  Telegram: https://t.me/airdrop_node                    │"
+echo "│ 🖥️  Min Spec: 4 vCPU / 8 GB RAM                           │"
 echo "└────────────────────────────────────────────────────────────┘"
 echo ""
 
 animate_text "Welcome to Fortytwo CPU Node Setup!"
 
-# ──────────────── Check curl ────────────────
-if ! command -v curl &> /dev/null; then
-    animate_text "Installing curl..."
-    sudo apt update && sudo apt install -y curl
-fi
+# ─────────────────────────────────────────────────────────────
+# Dependencies
+# ─────────────────────────────────────────────────────────────
+for pkg in curl unzip; do
+    if ! command -v $pkg &> /dev/null; then
+        animate_text "Installing $pkg..."
+        sudo apt update && sudo apt install -y $pkg
+    fi
+done
 
-# ──────────────── Directory setup ────────────────
+# ─────────────────────────────────────────────────────────────
+# Directories
+# ─────────────────────────────────────────────────────────────
 PROJECT_DIR="$HOME/FortytwoNode"
 PROJECT_DEBUG_DIR="$PROJECT_DIR/debug"
 PROJECT_MODEL_CACHE_DIR="$PROJECT_DIR/model_cache"
+
 CAPSULE_EXEC="$PROJECT_DIR/FortytwoCapsule"
 PROTOCOL_EXEC="$PROJECT_DIR/FortytwoProtocol"
 UTILS_EXEC="$PROJECT_DIR/FortytwoUtils"
 ACCOUNT_PRIVATE_KEY_FILE="$PROJECT_DIR/.account_private_key"
-MODEL_CONFIG_FILE="$PROJECT_DIR/.model_config"
 
 mkdir -p "$PROJECT_DEBUG_DIR" "$PROJECT_MODEL_CACHE_DIR"
 
-# ──────────────── Download Fortytwo Utils ────────────────
-UTILS_VERSION=$(curl -s "https://download.swarminference.io/utilities/latest")
-curl -L -o "$UTILS_EXEC" "https://download.swarminference.io/utilities/v$UTILS_VERSION/FortytwoUtilsLinux"
+# ─────────────────────────────────────────────────────────────
+# Download Fortytwo Utilities (Official)
+# ─────────────────────────────────────────────────────────────
+UTILS_VERSION=$(curl -fsSL https://download.swarminference.io/utilities/latest)
+UTILS_URL="https://download.swarminference.io/utilities/v${UTILS_VERSION}/FortytwoUtilsLinux"
+
+animate_text "Downloading Fortytwo Utils v$UTILS_VERSION..."
+curl -fL -o "$UTILS_EXEC" "$UTILS_URL"
 chmod +x "$UTILS_EXEC"
 
-# ──────────────── Identity Setup ────────────────
+# ─────────────────────────────────────────────────────────────
+# Identity Setup
+# ─────────────────────────────────────────────────────────────
 if [[ -f "$ACCOUNT_PRIVATE_KEY_FILE" ]]; then
     ACCOUNT_PRIVATE_KEY=$(cat "$ACCOUNT_PRIVATE_KEY_FILE")
-    animate_text "✓ Private key loaded."
+    animate_text "✓ Existing identity loaded."
 else
-    echo -e "\nChoose identity method:"
-    echo "[1] Create new identity with activation code"
-    echo "[2] Recover existing identity with seed phrase"
+    echo ""
+    echo "[1] Create new identity"
+    echo "[2] Recover identity"
     read -rp "Select option [1-2]: " IDENTITY_OPTION
 
     if [[ "$IDENTITY_OPTION" == "2" ]]; then
         while true; do
-            read -rp "Enter your recovery phrase: " ACCOUNT_SEED_PHRASE
-            ACCOUNT_PRIVATE_KEY=$("$UTILS_EXEC" --phrase "$ACCOUNT_SEED_PHRASE")
-            if [[ "$ACCOUNT_PRIVATE_KEY" == 0x* ]]; then
+            read -rp "Enter recovery phrase: " ACCOUNT_SEED_PHRASE
+            if ACCOUNT_PRIVATE_KEY=$("$UTILS_EXEC" --phrase "$ACCOUNT_SEED_PHRASE"); then
                 echo "$ACCOUNT_PRIVATE_KEY" > "$ACCOUNT_PRIVATE_KEY_FILE"
-                animate_text "✓ Private key recovered and saved."
+                animate_text "✓ Identity recovered."
                 break
             else
                 echo "Invalid phrase. Try again."
             fi
         done
     else
-        "$UTILS_EXEC" --check-drop-service || exit 1
+        "$UTILS_EXEC" --check-drop-service
         read -rp "Enter activation code: " INVITE_CODE
         "$UTILS_EXEC" --create-wallet "$ACCOUNT_PRIVATE_KEY_FILE" --drop-code "$INVITE_CODE"
         ACCOUNT_PRIVATE_KEY=$(<"$ACCOUNT_PRIVATE_KEY_FILE")
@@ -75,78 +94,81 @@ else
     fi
 fi
 
-# ──────────────── Model Selection ────────────────
-if [[ ! -f "$MODEL_CONFIG_FILE" ]]; then
-    echo ""
-    echo "Choose model to run on this CPU node:"
-    echo "  [1] VibeThinker 1.5B Q4 (≈1.1 GB RAM)"
-    echo "  [2] Qwen3‑1.7B – smarter model (≈1.7 GB RAM)"
-    read -rp "Select model [1-2] (default 1): " MODEL_OPTION
-    MODEL_OPTION=${MODEL_OPTION:-1}
+# ─────────────────────────────────────────────────────────────
+# Model Selection
+# ─────────────────────────────────────────────────────────────
+echo ""
+echo "Choose model:"
+echo " [1] TinyLlama 1.1B (default)"
+echo " [2] Qwen3 1.7B"
+read -rp "Select [1-2]: " MODEL_OPTION
+MODEL_OPTION=${MODEL_OPTION:-1}
 
-    if [[ "$MODEL_OPTION" == "2" ]]; then
-        LLM_HF_REPO="unsloth/Qwen3-1.7B-GGUF"
-        LLM_HF_MODEL_NAME="Qwen3-1.7B-Q4_K_M.gguf"
-        NODE_NAME="Qwen 3 1.7B Q4"
-    else
-        LLM_HF_REPO="mradermacher/VibeThinker-1.5B-GGUF"
-        LLM_HF_MODEL_NAME="VibeThinker-1.5B.Q4_K_M.gguf"
-        NODE_NAME="VibeThinker 1.5B Q4"
-    fi
-
-    # Save model config
-    cat <<EOF > "$MODEL_CONFIG_FILE"
-LLM_HF_REPO="$LLM_HF_REPO"
-LLM_HF_MODEL_NAME="$LLM_HF_MODEL_NAME"
-NODE_NAME="$NODE_NAME"
-EOF
-
-    animate_text "Fetching model (this may take a few minutes)..."
-    "$UTILS_EXEC" --hf-repo "$LLM_HF_REPO" --hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR"
+if [[ "$MODEL_OPTION" == "2" ]]; then
+    LLM_HF_REPO="unsloth/Qwen3-1.7B-GGUF"
+    LLM_HF_MODEL_NAME="Qwen3-1.7B-Q4_K_M.gguf"
+    NODE_NAME="Qwen3 1.7B Q4"
 else
-    source "$MODEL_CONFIG_FILE"
-    animate_text "✓ Using previously selected model: $NODE_NAME"
+    LLM_HF_REPO="TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"
+    LLM_HF_MODEL_NAME="tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
+    NODE_NAME="TinyLlama 1.1B Q4"
 fi
 
-# ──────────────── Update Capsule ────────────────
-animate_text "🔄 Updating Capsule..."
-CAPSULE_VERSION=$(curl -s "https://download.swarminference.io/capsule/latest")
-curl -L -o "$CAPSULE_EXEC" "https://download.swarminference.io/capsule/v$CAPSULE_VERSION/FortytwoCapsule-linux-amd64"
-chmod +x "$CAPSULE_EXEC"
+animate_text "Selected model: $NODE_NAME"
+"$UTILS_EXEC" --hf-repo "$LLM_HF_REPO" --hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR"
 
-# ──────────────── Update Protocol ────────────────
-animate_text "🔄 Updating Protocol Node..."
-PROTOCOL_VERSION=$(curl -s "https://download.swarminference.io/protocol/latest")
-curl -L -o "$PROTOCOL_EXEC" "https://download.swarminference.io/protocol/v$PROTOCOL_VERSION/FortytwoProtocolNode-linux-amd64"
+# ─────────────────────────────────────────────────────────────
+# Download Capsule (Custom ZIP)
+# ─────────────────────────────────────────────────────────────
+CAPSULE_ZIP_URL="https://raw.githubusercontent.com/choir94/Airdropguide/main/FortytwoCapsule.zip"
+CAPSULE_ZIP_PATH="/tmp/FortytwoCapsule.zip"
+
+animate_text "Downloading Capsule (custom build)..."
+curl -fL -o "$CAPSULE_ZIP_PATH" "$CAPSULE_ZIP_URL"
+unzip -o "$CAPSULE_ZIP_PATH" -d /tmp
+
+if [[ ! -f "/tmp/FortytwoCapsule" ]]; then
+    echo "✕ Capsule binary not found."
+    exit 1
+fi
+
+mv /tmp/FortytwoCapsule "$CAPSULE_EXEC"
+chmod +x "$CAPSULE_EXEC"
+rm -f "$CAPSULE_ZIP_PATH"
+
+# ─────────────────────────────────────────────────────────────
+# Download Protocol (Official)
+# ─────────────────────────────────────────────────────────────
+PROTOCOL_VERSION=$(curl -fsSL https://download.swarminference.io/protocol/latest)
+PROTOCOL_URL="https://download.swarminference.io/protocol/v${PROTOCOL_VERSION}/FortytwoProtocolNode-linux-amd64"
+
+animate_text "Downloading Protocol v$PROTOCOL_VERSION..."
+curl -fL -o "$PROTOCOL_EXEC" "$PROTOCOL_URL"
 chmod +x "$PROTOCOL_EXEC"
 
-# ──────────────── Start Capsule ────────────────
-animate_text " Launching Capsule..."
+# ─────────────────────────────────────────────────────────────
+# Launch Capsule
+# ─────────────────────────────────────────────────────────────
+animate_text "Starting Capsule..."
 "$CAPSULE_EXEC" \
-    --llm-hf-repo "$LLM_HF_REPO" \
-    --llm-hf-model-name "$LLM_HF_MODEL_NAME" \
-    --model-cache "$PROJECT_MODEL_CACHE_DIR" &
+  --llm-hf-repo "$LLM_HF_REPO" \
+  --llm-hf-model-name "$LLM_HF_MODEL_NAME" \
+  --model-cache "$PROJECT_MODEL_CACHE_DIR" &
 CAPSULE_PID=$!
 
 CAPSULE_READY_URL="http://0.0.0.0:42442/ready"
-animate_text " Waiting for Capsule to be ready..."
-while true; do
-    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$CAPSULE_READY_URL")
-    [[ "$STATUS" == "200" ]] && break
+animate_text "Waiting for Capsule readiness..."
+until curl -sf "$CAPSULE_READY_URL" >/dev/null; do
     sleep 5
-    if ! kill -0 "$CAPSULE_PID" 2>/dev/null; then
-        echo " Capsule exited unexpectedly."
-        exit 1
-    fi
+    kill -0 "$CAPSULE_PID" 2>/dev/null || exit 1
 done
 
-# ──────────────── Start Protocol ────────────────
-animate_text " Launching Protocol Node..."
-"$PROTOCOL_EXEC" \
-    --account-private-key "$ACCOUNT_PRIVATE_KEY" \
-    --db-folder "$PROJECT_DEBUG_DIR/db" &
+# ─────────────────────────────────────────────────────────────
+# Launch Protocol
+# ─────────────────────────────────────────────────────────────
+animate_text "Starting Protocol..."
+"$PROTOCOL_EXEC" --account-private-key "$ACCOUNT_PRIVATE_KEY" &
 PROTOCOL_PID=$!
 
-# ──────────────── Keep Alive ────────────────
 trap "kill $CAPSULE_PID $PROTOCOL_PID 2>/dev/null; exit 0" SIGINT SIGTERM
 wait
