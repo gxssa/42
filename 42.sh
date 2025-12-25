@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-# Fortytwo CPU Node Installer – By Airdrop Node
-# https://t.me/airdrop_node
-
 animate_text() {
     local text="$1"
     for ((i=0; i<${#text}; i++)); do
@@ -19,10 +16,7 @@ animate_text() {
 clear
 echo ""
 echo "┌────────────────────────────────────────────────────────────┐"
-echo "│         🚀 Fortytwo CPU Node Setup – Airdrop Node          │"
-echo "├────────────────────────────────────────────────────────────┤"
-echo "│ ⚙️  Telegram: https://t.me/airdrop_node                    │"
-echo "│ 🖥️  Min Spec: 4 vCPU / 8 GB RAM                           │"
+echo "│            Fortytwo CPU Node Setup – Airdrop Node          │"
 echo "└────────────────────────────────────────────────────────────┘"
 echo ""
 
@@ -99,7 +93,7 @@ fi
 # ─────────────────────────────────────────────────────────────
 echo ""
 echo "Choose model:"
-echo " [1] TinyLlama 1.1B (default)"
+echo " [1] VibeThinker 1.5B Q4 (default)"
 echo " [2] Qwen3 1.7B"
 read -rp "Select [1-2]: " MODEL_OPTION
 MODEL_OPTION=${MODEL_OPTION:-1}
@@ -109,9 +103,9 @@ if [[ "$MODEL_OPTION" == "2" ]]; then
     LLM_HF_MODEL_NAME="Qwen3-1.7B-Q4_K_M.gguf"
     NODE_NAME="Qwen3 1.7B Q4"
 else
-    LLM_HF_REPO="TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"
-    LLM_HF_MODEL_NAME="tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
-    NODE_NAME="TinyLlama 1.1B Q4"
+    LLM_HF_REPO="mradermacher/VibeThinker-1.5B-GGUF"
+    LLM_HF_MODEL_NAME="VibeThinker-1.5B.Q4_K_M.gguf"
+    NODE_NAME="VibeThinker 1.5B Q4"
 fi
 
 animate_text "Selected model: $NODE_NAME"
