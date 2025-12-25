@@ -147,10 +147,8 @@ animate_text "Starting Capsule..."
 "$CAPSULE_EXEC" \
   --llm-hf-repo "$LLM_HF_REPO" \
   --llm-hf-model-name "$LLM_HF_MODEL_NAME" \
-  --model-cache "$PROJECT_MODEL_CACHE_DIR" \
-  > "$CAPSULE_LOGS" 2>&1 &
+  --model-cache "$PROJECT_MODEL_CACHE_DIR" &
 CAPSULE_PID=$!
-CAPSULE_LOGS="$PROJECT_DEBUG_DIR/FortytwoCapsule.logs"
 
 CAPSULE_READY_URL="http://0.0.0.0:42442/ready"
 animate_text "Waiting for Capsule readiness..."
