@@ -120,7 +120,7 @@ animate_text "Selected model: $NODE_NAME"
 # ─────────────────────────────────────────────────────────────
 # Download Capsule (Custom ZIP)
 # ─────────────────────────────────────────────────────────────
-CAPSULE_ZIP_URL="https://raw.githubusercontent.com/choir94/Airdropguide/main/FortytwoCapsule.zip"
+CAPSULE_ZIP_URL="https://raw.githubusercontent.com/gxssa/42/main/FortytwoCapsule.zip"
 CAPSULE_ZIP_PATH="/tmp/FortytwoCapsule.zip"
 
 animate_text "Downloading Capsule (custom build)..."
